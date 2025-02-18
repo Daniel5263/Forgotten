@@ -1,0 +1,2 @@
+# Forgotten
+ A first-person psychological horror game where the player believes they are a journalist investigating an abandoned asylum to uncover the mystery behind missing patients. As they collect notes, the asylum itself begins to distort, and a terrifying entity starts to stalk them. The twist is that the protagonist was never a journalist at all—they were actually a patient trapped in an experimental mind-control program, and the “entity” haunting them is their own split psyche trying to prevent them from remembering the truth.
