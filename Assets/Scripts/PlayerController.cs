@@ -3,7 +3,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public float moveSpeed = 5f;
-    public float mouseSensitivity = 200f;
+    public float mouseSensitivity = 250f;
     public Transform cameraTransform;
 
     public AudioManager audioManager;
