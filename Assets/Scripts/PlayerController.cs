@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour
     // Movement settings
     public float walkSpeed = 3f;
     public float runSpeed = 5f;
-    public float jumpPower = 3f;
+    public float jumpPower = 0f;
     public float gravity = 10f;
 
     // Look settings
@@ -27,10 +27,6 @@ public class PlayerController : MonoBehaviour
     public AudioManager audioManager;
     public float footstepInterval = 0.5f;
     private float footstepTimer = 0f;
-
-    // Flashlight pickup settings
-    public Transform flashlightSlot;
-    private GameObject pickedUpFlashlight;
 
     // Internal variables
     private Vector3 moveDirection;
@@ -127,52 +123,5 @@ public class PlayerController : MonoBehaviour
         }
 
         playerCam.fieldOfView = Mathf.Lerp(playerCam.fieldOfView, isZoomed ? ZoomFOV : initialFOV, Time.deltaTime * cameraZoomSmooth);
-    }
-
-    private void OnTriggerStay(Collider other)
-    {
-        if (other.CompareTag("Flashlight") && pickedUpFlashlight == null)
-        {
-            // Optionally, display a UI prompt for pickup here (e.g., "Press E to pick up flashlight")
-            if (Input.GetKeyDown(KeyCode.E))
-            {
-                PickUpFlashlight(other.gameObject);
-            }
-        }
-    }
-
-    // Attaches the flashlight to the player's designated slot and enables its toggle functionality.
-    void PickUpFlashlight(GameObject flashlightObject)
-    {
-        pickedUpFlashlight = flashlightObject;
-
-        // Attach the flashlight to the assigned flashlight slot
-        if (flashlightSlot != null)
-        {
-            pickedUpFlashlight.transform.SetParent(flashlightSlot);
-            pickedUpFlashlight.transform.localPosition = Vector3.zero;
-            pickedUpFlashlight.transform.localRotation = Quaternion.identity;
-        }
-        else
-        {
-            // Fallback: attach to the player if no slot is specified
-            pickedUpFlashlight.transform.SetParent(transform);
-        }
-
-        // Disable the flashlight's collider so it won't trigger further pickups
-        Collider col = pickedUpFlashlight.GetComponent<Collider>();
-        if (col != null)
-        {
-            col.enabled = false;
-        }
-
-        // Enable the Flashlight.cs component (which should handle toggling on/off using the F key)
-        Flashlight flashlightScript = pickedUpFlashlight.GetComponent<Flashlight>();
-        if (flashlightScript != null)
-        {
-            flashlightScript.enabled = true;
-        }
-
-        Debug.Log("Flashlight picked up! Press F to toggle it.");
     }
 }

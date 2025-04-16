@@ -8,11 +8,13 @@ public class CollectPages : MonoBehaviour
     public AudioSource collectSound;
     private GameObject page;
     private bool inReach;
+    private GameObject gameLogic;
 
     void Start()
     {
         collectText.SetActive(false);
         inReach = false;
+        gameLogic = GameObject.FindWithTag("GameLogic");
         page = this.gameObject;
     }
 
@@ -36,8 +38,9 @@ public class CollectPages : MonoBehaviour
 
     void Update()
     {
-        if(inReach && Input.GetButtonDown("pickup"))
+        if (inReach && Input.GetButtonDown("pickup"))
         {
+            gameLogic.GetComponent<GameLogic>().pageCount += 1;
             collectSound.Play();
             collectText.SetActive(false);
             page.SetActive(false);
