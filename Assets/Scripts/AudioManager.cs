@@ -16,6 +16,7 @@ public class AudioManager : MonoBehaviour
     public AudioClip screamerJumpscare;
     public AudioClip staticFollow;
     public AudioClip whisperingWinds;
+    public AudioClip flashlight;
 
     void Start()
     {

@@ -1,134 +1,78 @@
 using UnityEngine;
+using UnityEngine.AI;
 
+[RequireComponent(typeof(NavMeshAgent))]
 public class EnemyAI : MonoBehaviour
 {
-    public Transform player; // Reference to the player's GameObject
-    public float teleportDistance = 10f; // Maximum teleportation distance
-    public float teleportCooldown = 5f; // Time between teleportation attempts
-    public float returnCooldown = 10f; // Time before returning to base spot
-    [Range(0f, 1f)] public float chaseProbability = 0.65f; // Probability of chasing the player
-    public float rotationSpeed = 5f; // Rotation speed when looking at the player
-    public AudioClip teleportSound; // Reference to the teleport sound effect
+    [Header("Player & NavMesh")]
+    public Transform player;
+    private NavMeshAgent agent;
+
+    [Header("Teleport Settings")]
+    public float teleportDistance = 12f;
+    public float minTeleportCooldown = 2f;
+    public float maxTeleportCooldown = 6f;
+    [Range(0f, 1f)] public float chaseProbability = 0.8f;
+    private float teleportTimer;
+
+    [Header("Chase Settings")]
+    public float chaseRange = 8f;
+
+    [Header("Static Visual Only")]
+    public GameObject staticObject;
+    public float staticActivationRange = 20f;
+
+    [Header("Teleport Audio")]
+    public AudioClip teleportSound;
     private AudioSource audioSource;
 
-    public GameObject staticObject; // Reference to the "static" GameObject
-    public float staticActivationRange = 5f; // Range at which "static" should be activated
+    private Vector3 basePosition;
 
-    private Vector3 baseTeleportSpot;
-    private float teleportTimer;
-    private bool returningToBase;
-
-
-    private void Start()
+    void Start()
     {
-        baseTeleportSpot = transform.position;
-        teleportTimer = teleportCooldown;
+        basePosition = transform.position;
+        teleportTimer = Random.Range(minTeleportCooldown, maxTeleportCooldown);
 
-        // Get or add an AudioSource component
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
+        agent = GetComponent<NavMeshAgent>();
 
-        // Set the teleport sound
-        audioSource.clip = teleportSound;
+        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
 
-        // Ensure the "static" object is initially turned off
-        if (staticObject != null)
-        {
-            staticObject.SetActive(false);
-        }
+        if (staticObject) staticObject.SetActive(false);
     }
 
-    private void Update()
+    void Update()
     {
+        if (player == null) return;
 
-        if (player == null)
+        float dist = Vector3.Distance(transform.position, player.position);
+
+        // visual static flicker
+        if (staticObject)
+            staticObject.SetActive(dist <= staticActivationRange);
+
+        // if close enough, chase via NavMeshAgent
+        if (dist <= chaseRange)
         {
-           
+            agent.isStopped = false;
+            agent.SetDestination(player.position);
             return;
         }
 
+        // otherwise handle teleport
+        agent.isStopped = true;
         teleportTimer -= Time.deltaTime;
-
         if (teleportTimer <= 0f)
         {
-            if (returningToBase)
-            {
-                TeleportToBaseSpot();
-                teleportTimer = returnCooldown;
-                returningToBase = false;
-            }
-            else
-            {
-                DecideTeleportAction();
-                teleportTimer = teleportCooldown;
-            }
-        }
+            bool teleportNear = Random.value <= chaseProbability;
+            Vector3 target = teleportNear
+                ? player.position + Random.onUnitSphere * teleportDistance
+                : basePosition;
 
-        RotateTowardsPlayer();
+            agent.Warp(target);
+            audioSource.PlayOneShot(teleportSound);
 
-        // Check player distance and toggle the "static" object accordingly
-        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
-        if (distanceToPlayer <= staticActivationRange)
-        {
-            if (staticObject != null && !staticObject.activeSelf)
-            {
-                staticObject.SetActive(true);
-            }
-        }
-        else
-        {
-            if (staticObject != null && staticObject.activeSelf)
-            {
-                staticObject.SetActive(false);
-            }
-        }
-    }
-
-    private void DecideTeleportAction()
-    {
-        float randomValue = Random.value;
-
-        if (randomValue <= chaseProbability)
-        {
-            TeleportNearPlayer();
-        }
-        else
-        {
-            TeleportToBaseSpot();
-        }
-    }
-
-    private void TeleportNearPlayer()
-    {
-        Vector3 randomPosition = player.position + Random.onUnitSphere * teleportDistance;
-        randomPosition.y = transform.position.y; // Keep the same Y position
-        transform.position = randomPosition;
-
-        // Play the teleport sound
-        audioSource.Play();
-    }
-
-    private void TeleportToBaseSpot()
-    {
-        transform.position = baseTeleportSpot;
-        returningToBase = true;
-
-        // Play the teleport sound
-        audioSource.Play();
-    }
-
-    private void RotateTowardsPlayer()
-    {
-        Vector3 directionToPlayer = player.position - transform.position;
-        directionToPlayer.y = 0f; // Ignore the vertical component
-
-        if (directionToPlayer != Vector3.zero)
-        {
-            Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+            teleportTimer = Random.Range(minTeleportCooldown, maxTeleportCooldown);
         }
     }
 }

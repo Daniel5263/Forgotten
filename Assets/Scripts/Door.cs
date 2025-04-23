@@ -9,6 +9,8 @@ public class DoorController : MonoBehaviour
     public float closeRot = 0;
     public float speed = 2;
     public bool opening;
+    public AudioClip interactDoor;
+    private AudioSource audioSource;
 
     void Update()
     {
@@ -32,5 +34,15 @@ public class DoorController : MonoBehaviour
     public void ToggleDoor()
     {
         opening = !opening;
+
+        if (audioSource != null && interactDoor != null)
+        {
+            audioSource.PlayOneShot(interactDoor);
+        }
+    }
+
+    void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
     }
 }

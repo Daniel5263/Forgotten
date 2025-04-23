@@ -46,8 +46,6 @@ public class MainMenuLogic : MonoBehaviour
         optionsMenu.GetComponent<Canvas>().enabled = false;
     }
 
-
-
     void Update()
     {
         
